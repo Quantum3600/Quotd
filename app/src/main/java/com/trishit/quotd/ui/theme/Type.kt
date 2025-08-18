@@ -1,20 +1,37 @@
 package com.trishit.quotd.ui.theme
 
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.trishit.quotd.FunnelDisplayFamily
+import com.trishit.quotd.MuseoModernoFamily
 
 // Set of Material typography styles to start with
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 val Typography = Typography(
     bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = MuseoModernoFamily,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
+        fontSize = 20.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
-    )
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = MuseoModernoFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.25.sp
+    ),
+    headlineMediumEmphasized = TextStyle(
+        fontFamily = FunnelDisplayFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 32.sp,
+        lineHeight = 32.sp,
+        letterSpacing = 0.15.sp
+    ),
     /* Other default text styles to override
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,

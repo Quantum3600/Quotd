@@ -8,11 +8,12 @@ import androidx.lifecycle.viewModelScope
 import com.trishit.quotd.data.QuoteRepository
 import com.trishit.quotd.data.QuoteResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class QuoteViewModel @Inject constructor(private val repository: QuoteRepository) : ViewModel(){
+open class QuoteViewModel @Inject constructor(private val repository: QuoteRepository) : ViewModel(){
     private val _quote = MutableLiveData<QuoteResponse?>(null)
     val quote: LiveData<QuoteResponse?> get() = _quote
 
@@ -29,8 +30,17 @@ class QuoteViewModel @Inject constructor(private val repository: QuoteRepository
     val errorMessage: LiveData<String?> get() = _errorMessage
 
     init {
+        observeFavourites()
         fetchRandomQuote()
         fetchTodayQuote()
+    }
+
+    private fun observeFavourites() {
+        viewModelScope.launch {
+            repository.favouritesFlow().collectLatest { list ->
+                _favourites.value = list.map { QuoteResponse(q = it.q, a = it.a) }
+            }
+        }
     }
 
     fun fetchRandomQuote() {
@@ -60,15 +70,25 @@ class QuoteViewModel @Inject constructor(private val repository: QuoteRepository
     }
 
     fun addToFavourites(quote: QuoteResponse) {
-        val currentList = _favourites.value ?: emptyList()
-        if (currentList.none { it.q == quote.q && it.a == quote.a }) {
-            _favourites.value = currentList + quote
+        viewModelScope.launch {
+            repository.addFavourite(quote.q, quote.a)
         }
     }
 
     fun removeFromFavourites(quote: QuoteResponse) {
-        val currentList = _favourites.value ?: emptyList()
-        _favourites.value = currentList.filterNot { it.q == quote.q && it.a == quote.a }
+        viewModelScope.launch {
+            repository.removeFavourite(quote.q, quote.a)
+        }
+    }
+
+    fun toggleFavourite(quote: QuoteResponse) {
+        viewModelScope.launch {
+            if (repository.isFavourite(quote.q, quote.a)) {
+                repository.removeFavourite(quote.q, quote.a)
+            } else {
+                repository.addFavourite(quote.q, quote.a)
+            }
+        }
     }
 
     fun fetchTodayQuote() {

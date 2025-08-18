@@ -4,31 +4,36 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import dagger.hilt.android.AndroidEntryPoint
+import com.trishit.quotd.components.BottomTabs
 import com.trishit.quotd.ui.FavouriteScreen
 import com.trishit.quotd.ui.HomeScreen
 import com.trishit.quotd.ui.QuoteViewModel
 import com.trishit.quotd.ui.theme.QuotdTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -44,43 +49,69 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
+enum class MainNavTab { Home, Favourites }
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun MainScaffold(viewModel: QuoteViewModel) {
-    var selectedTab by rememberSaveable { mutableStateOf(BottomTab.Home) }
+    val selectedTabState = rememberSaveable { mutableStateOf(MainNavTab.Home) }
+    val stateHolder = rememberSaveableStateHolder()
+    val background = MaterialTheme.colorScheme.primaryContainer
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = selectedTab == BottomTab.Home,
-                    onClick = { selectedTab = BottomTab.Home },
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home") }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == BottomTab.Favourites,
-                    onClick = { selectedTab = BottomTab.Favourites },
-                    icon = { Icon(Icons.Default.Favorite, contentDescription = "Favourites") },
-                    label = { Text("Favourites") }
+    Box(Modifier.fillMaxSize()) {
+        // Content scaffold (no bottomBar)
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text(
+                        text = when (selectedTabState.value) {
+                            MainNavTab.Home -> "Quotd"
+                            MainNavTab.Favourites -> "Favourites"
+                        },
+                        fontFamily = FunnelDisplayFamily,
+                        fontWeight = when (selectedTabState.value) {
+                            MainNavTab.Home -> FontWeight.ExtraBold
+                            MainNavTab.Favourites -> FontWeight.Normal
+                        },
+                        fontSize = when (selectedTabState.value) {
+                            MainNavTab.Home -> 48.sp
+                            MainNavTab.Favourites -> MaterialTheme.typography.headlineLarge.fontSize
+                        },
+                    ) },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    modifier = Modifier.semantics { contentDescription = "TopAppBar" }
                 )
             }
+        ) { innerPadding ->
+            val selected = selectedTabState.value
+            // Add extra bottom padding so content doesn't get covered by the overlaid bottom bar
+            Box(Modifier.padding(innerPadding)) {
+                Crossfade(targetState = selected, label = "tab-crossfade") { tab ->
+                    stateHolder.SaveableStateProvider(key = tab.name) {
+                        when (tab) {
+                            MainNavTab.Home -> HomeScreen(viewModel)
+                            MainNavTab.Favourites -> FavouriteScreen(viewModel)
+                        }
+                    }
+                }
+            }
         }
-    ) { innerPadding ->
-        TabContent(selectedTab = selectedTab, innerPadding = innerPadding, viewModel = viewModel)
+
+        // Overlay BottomTabs outside Scaffold so it's not constrained by Scaffold.bottomBar
+        BottomTabs(
+            selectedTabState = selectedTabState,
+            containerColor = background,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 24.dp, bottom = 24.dp)
+        )
     }
+
 }
-
-private enum class BottomTab { Home, Favourites }
-
-@Composable
-private fun TabContent(selectedTab: BottomTab, innerPadding: PaddingValues, viewModel: QuoteViewModel) {
-    when (selectedTab) {
-        BottomTab.Home -> HomeScreen(viewModel)
-        BottomTab.Favourites -> FavouriteScreen(viewModel)
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 fun AppPreview() {

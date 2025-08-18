@@ -1,6 +1,5 @@
 [versions]
-agp = "8.12.0"
-androidliquidglass = "1.0.0-alpha04"
+agp = "8.12.1"
 kotlin = "2.2.10"
 coreKtx = "1.17.0"
 junit = "4.13.2"
@@ -10,16 +9,17 @@ lifecycleRuntimeKtx = "2.9.2"
 activityCompose = "1.10.1"
 composeBom = "2025.08.00"
 hilt = "2.57"
-ksp = "2.2.0-2.0.2"
+ksp = "2.2.10-2.0.2"
+material3Android = "1.5.0-alpha02"
 navigation3RuntimeAndroid = "1.0.0-alpha07"
 retrofit = "3.0.0"
 okhttp = "5.1.0"
 foundationLayout = "1.9.0"
-
+room = "2.7.2"
 
 [libraries]
-androidliquidglass = { module = "com.github.Kyant0:AndroidLiquidGlass", version.ref = "androidliquidglass" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-material3-android = { module = "androidx.compose.material3:material3-android", version.ref = "material3Android" }
 androidx-navigation3-runtime-android = { module = "androidx.navigation3:navigation3-runtime-android", version.ref = "navigation3RuntimeAndroid" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3RuntimeAndroid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -45,6 +45,9 @@ androidx-material-icons-core = { group = "androidx.compose.material", name = "ma
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
