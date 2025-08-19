@@ -18,9 +18,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -31,11 +32,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -44,6 +48,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.trishit.quotd.components.HeartPopup
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -57,6 +62,8 @@ fun HomeScreen(viewModel: QuoteViewModel = hiltViewModel()) {
     val errorMessage by viewModel.errorMessage.observeAsState()
     val offsetY = remember { Animatable(0f) }
     val alpha = remember { Animatable(1f) }
+    var showHeartPopup by remember { mutableStateOf(false) }
+    var heartPosition by remember { mutableStateOf(Offset.Zero) }
     val coroutineScope = rememberCoroutineScope()
     val currentQuote = rememberUpdatedState(quote)
     val isLiked = remember(quote, favourites) {
@@ -85,6 +92,7 @@ fun HomeScreen(viewModel: QuoteViewModel = hiltViewModel()) {
         contentAlignment = Alignment.Center
     ) {
         Card(
+            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainerHigh),
             shape = RoundedCornerShape(40.dp),
             modifier = Modifier
                 .fillMaxSize()
@@ -98,10 +106,21 @@ fun HomeScreen(viewModel: QuoteViewModel = hiltViewModel()) {
                     coroutineScope {
                         launch {
                             detectTapGestures(
-                                onDoubleTap = {
+                                onDoubleTap = { tapOffset ->
                                     currentQuote.let {
                                         val q = it.value ?: return@let
                                         viewModel.toggleFavourite(q)
+                                    }
+                                    val cardBounds = size
+                                    val adjustedTapOffset = Offset(
+                                        x = tapOffset.x - (cardBounds.width / 2),
+                                        y = tapOffset.y - (cardBounds.height / 2)
+                                    )
+                                    heartPosition = adjustedTapOffset
+                                    showHeartPopup = if (isLiked) {
+                                        false // Hide popup if already liked
+                                    } else {
+                                        true // Show popup on like
                                     }
                                 }
                             )
@@ -111,7 +130,7 @@ fun HomeScreen(viewModel: QuoteViewModel = hiltViewModel()) {
                                 onDragEnd = {
                                     if (offsetY.value < -swipePx) {
                                         coroutineScope.launch {
-                                            offsetY.animateTo(-1000f, animationSpec = tween(500))
+                                            offsetY.animateTo(-2000f, animationSpec = tween(200))
                                             alpha.animateTo(0f, animationSpec = tween(500))
                                             viewModel.fetchRandomQuote()
                                         }
@@ -227,7 +246,7 @@ fun HomeScreen(viewModel: QuoteViewModel = hiltViewModel()) {
                                             modifier = Modifier
                                                 .fillMaxSize()
                                                 .padding(8.dp),
-                                            imageVector = Icons.Default.Share,
+                                            imageVector = Icons.Default.IosShare,
                                             contentDescription = "Share Quote"
                                         )
                                     }
@@ -241,6 +260,14 @@ fun HomeScreen(viewModel: QuoteViewModel = hiltViewModel()) {
                         }
                     }
                 }
+            }
+        )
+        HeartPopup(
+            isVisible = showHeartPopup,
+            offsetX = with(LocalDensity.current) { heartPosition.x.toDp() },
+            offsetY = with(LocalDensity.current) { heartPosition.y.toDp() },
+            onAnimationEnd = {
+                showHeartPopup = false
             }
         )
 
