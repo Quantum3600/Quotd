@@ -101,9 +101,7 @@ fun FavouriteScreen(viewModel: QuoteViewModel = hiltViewModel()) {
                             SwipeToDismissBoxValue.EndToStart -> {
                                 viewModel.removeFromFavourites(quote)
                             }
-                            SwipeToDismissBoxValue.Settled -> {
-                                // Do nothing when settled
-                            }
+                            SwipeToDismissBoxValue.Settled -> {}
                         }
                     },
                     content = {
@@ -116,7 +114,6 @@ fun FavouriteScreen(viewModel: QuoteViewModel = hiltViewModel()) {
                                 modifier = Modifier
                                     .padding(16.dp)
                                     .clickable(true, onClick = {
-                                    // Handle click if needed, e.g., navigate to details
                                         val sendIntent = Intent().apply {
                                             action = Intent.ACTION_SEND
                                             putExtra(Intent.EXTRA_TEXT, "$quote.q - $quote.a")

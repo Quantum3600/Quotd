@@ -74,7 +74,6 @@ fun HomeScreen(viewModel: QuoteViewModel = hiltViewModel()) {
 
     LaunchedEffect(quote) {
         if (quote != null) {
-            // Reset animations when a new quote is loaded
             offsetY.snapTo(300f)
             alpha.snapTo(0f)
             launch {
@@ -102,7 +101,6 @@ fun HomeScreen(viewModel: QuoteViewModel = hiltViewModel()) {
                     this.alpha = alpha.value
                 }
                 .pointerInput(Unit) {
-                    // Reset animations on tap
                     coroutineScope {
                         launch {
                             detectTapGestures(
@@ -118,9 +116,9 @@ fun HomeScreen(viewModel: QuoteViewModel = hiltViewModel()) {
                                     )
                                     heartPosition = adjustedTapOffset
                                     showHeartPopup = if (isLiked) {
-                                        false // Hide popup if already liked
+                                        false
                                     } else {
-                                        true // Show popup on like
+                                        true
                                     }
                                 }
                             )
@@ -255,7 +253,6 @@ fun HomeScreen(viewModel: QuoteViewModel = hiltViewModel()) {
                         }
 
                         else -> {
-                            // Initial state (no data yet, not loading) - show loader
                             ContainedLoadingIndicator()
                         }
                     }
@@ -271,7 +268,6 @@ fun HomeScreen(viewModel: QuoteViewModel = hiltViewModel()) {
             }
         )
 
-        // Overlay loader visible when loading and the card has been faded out (after drag)
         if (isLoading && alpha.value <= 0.01f) {
             Box(
                 modifier = Modifier

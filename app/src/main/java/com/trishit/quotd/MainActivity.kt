@@ -59,7 +59,6 @@ private fun MainScaffold(viewModel: QuoteViewModel) {
     val background = MaterialTheme.colorScheme.primaryContainer
 
     Box(Modifier.fillMaxSize()) {
-        // Content scaffold (no bottomBar)
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
@@ -79,16 +78,15 @@ private fun MainScaffold(viewModel: QuoteViewModel) {
                             MainNavTab.Favourites -> MaterialTheme.typography.headlineLarge.fontSize
                         },
                     ) },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
                     ),
                     modifier = Modifier.semantics { contentDescription = "TopAppBar" }
                 )
             }
         ) { innerPadding ->
             val selected = selectedTabState.value
-            // Add extra bottom padding so content doesn't get covered by the overlaid bottom bar
             Box(Modifier.padding(innerPadding)) {
                 Crossfade(targetState = selected, label = "tab-crossfade") { tab ->
                     stateHolder.SaveableStateProvider(key = tab.name) {
@@ -101,7 +99,6 @@ private fun MainScaffold(viewModel: QuoteViewModel) {
             }
         }
 
-        // Overlay BottomTabs outside Scaffold so it's not constrained by Scaffold.bottomBar
         BottomTabs(
             selectedTabState = selectedTabState,
             containerColor = background,
@@ -116,7 +113,6 @@ private fun MainScaffold(viewModel: QuoteViewModel) {
 @Composable
 fun AppPreview() {
     QuotdTheme {
-        // Preview with a fake layout; not rendering actual data here.
         Text("Quotd")
     }
 }

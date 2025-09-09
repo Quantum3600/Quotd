@@ -9,11 +9,8 @@ class QuoteRepository @Inject constructor(
     private val api: QuoteApi,
     private val favouriteDao: FavouriteDao
 ) {
-    // Network
     suspend fun fetchRandomQuote() = api.getRandomQuote()
     suspend fun fetchTodayQuote() = api.getTodayQuote()
-
-    // Local favourites
     fun favouritesFlow(): Flow<List<FavouriteQuote>> = favouriteDao.getAll()
     suspend fun addFavourite(q: String, a: String) = favouriteDao.insert(FavouriteQuote(q = q, a = a))
     suspend fun removeFavourite(q: String, a: String) = favouriteDao.deleteByQuote(q, a)
