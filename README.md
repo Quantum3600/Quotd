@@ -105,7 +105,7 @@
 
 ## 🏗️ Architecture
 
-The app follows **MVVM (Model-View-ViewModel)** architecture pattern with **Clean Architecture** principles:
+The app follows **MVI (Model-View-Intent)** architecture pattern with **Clean Architecture** principles:
 
 ```
 📦 com.trishit.quotd
