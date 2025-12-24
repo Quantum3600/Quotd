@@ -8,7 +8,7 @@
 
 **A beautiful, Instagram-inspired daily quote discovery app built with Kotlin & Jetpack Compose** ❤️
 
-*An internship project for CodSoft using ZenQuotes API*
+*A personal Android project using ZenQuotes API*
 
 [Features](#-features) • [Screenshots](#-screenshots) • [Tech Stack](#-tech-stack) • [Installation](#-installation) • [Architecture](#-architecture)
 
@@ -179,7 +179,6 @@ This project is available for educational and personal use.  Please check the [P
 
 **Trishit Majumdar** ([@Quantum3600](https://github.com/Quantum3600))
 
-- 💼 CodSoft Internship Project
 - 📧 Feel free to reach out for collaborations! 
 
 ---
@@ -187,7 +186,6 @@ This project is available for educational and personal use.  Please check the [P
 ## 🙏 Acknowledgments
 
 - **[ZenQuotes API](https://zenquotes.io/)** for providing the quote data
-- **CodSoft** for the internship opportunity
 - **Jetpack Compose** community for excellent resources
 - All the inspiring personalities whose quotes make this app meaningful
 
