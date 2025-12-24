@@ -27,7 +27,7 @@
 - **🗑️ Swipe to Delete**: Remove favorites with a smooth swipe-to-dismiss gesture
 
 ### 🎨 Design Highlights
-- **Modern Material 3 Design**: Beautiful, cohesive UI following Material You guidelines
+- **Latest Material 3 Expressive Design**: Beautiful, cohesive UI following Material You and new Expressive guidelines
 - **Instagram-Inspired Interface**: Familiar and friendly user experience
 - **Smooth Animations**: Delightful micro-interactions and transitions
 - **Dark Mode Support**: Comfortable reading in any lighting condition
@@ -50,9 +50,9 @@
 - **Target SDK**: 36
 
 ### Architecture & Libraries
-- **Architecture**: MVVM (Model-View-ViewModel)
+- **Architecture**: MVI (Model-View-Intent)
 - **Dependency Injection**:  Hilt/Dagger
-- **Navigation**: Jetpack Navigation Compose
+- **Navigation**: Navigation 3 Compose
 - **Networking**: 
   - Retrofit for API calls
   - OkHttp for logging
