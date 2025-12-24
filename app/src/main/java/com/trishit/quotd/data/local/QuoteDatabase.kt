@@ -4,10 +4,11 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [FavouriteQuote::class],
-    version = 1,
+    entities = [FavouriteQuote::class, CachedQuote::class],
+    version = 2,
     exportSchema = false
 )
 abstract class QuoteDatabase : RoomDatabase() {
     abstract fun favouriteDao(): FavouriteDao
+    abstract fun cachedQuoteDao(): CachedQuoteDao
 }

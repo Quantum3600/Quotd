@@ -2,6 +2,11 @@ package com.trishit.quotd.di
 
 import android.content.Context
 import androidx.room.Room
+import com.trishit.quotd.data.QuoteApi
+import com.trishit.quotd.data.QuoteRepository
+import com.trishit.quotd.data.local.CachedQuoteDao
+import com.trishit.quotd.data.local.FavouriteDao
+import com.trishit.quotd.data.local.QuoteDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,10 +17,6 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
-import com.trishit.quotd.data.QuoteApi
-import com.trishit.quotd.data.QuoteRepository
-import com.trishit.quotd.data.local.FavouriteDao
-import com.trishit.quotd.data.local.QuoteDatabase
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -48,13 +49,18 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): QuoteDatabase =
-        Room.databaseBuilder(context, QuoteDatabase::class.java, "quotes.db").build()
+        Room.databaseBuilder(context, QuoteDatabase::class.java, "quotes.db")
+            .fallbackToDestructiveMigration(false) // Handle version changes by recreating the database
+            .build()
 
     @Provides
     fun provideFavouriteDao(db: QuoteDatabase): FavouriteDao = db.favouriteDao()
 
     @Provides
+    fun provideCachedQuoteDao(db: QuoteDatabase): CachedQuoteDao = db.cachedQuoteDao()
+
+    @Provides
     @Singleton
-    fun provideQuoteRepository(api: QuoteApi, dao: FavouriteDao): QuoteRepository =
-        QuoteRepository(api, dao)
+    fun provideQuoteRepository(api: QuoteApi, favouriteDao: FavouriteDao, cachedQuoteDao: CachedQuoteDao): QuoteRepository =
+        QuoteRepository(api, favouriteDao, cachedQuoteDao)
 }

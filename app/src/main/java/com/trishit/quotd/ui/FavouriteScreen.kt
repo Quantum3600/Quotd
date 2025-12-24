@@ -27,8 +27,6 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,15 +34,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.trishit.quotd.FunnelDisplayFamily
 
-
 @Composable
-fun FavouriteScreen(viewModel: QuoteViewModel = hiltViewModel()) {
-    val favourites by viewModel.favourites.observeAsState(emptyList())
+fun FavouriteScreen(state: QuoteState, onEvent: (QuoteEvent) -> Unit) {
+    val favourites = state.favourites
     val context = LocalContext.current
-    if (!favourites.isEmpty()) {
+    if (favourites.isNotEmpty()) {
         LazyColumn(
             contentPadding = PaddingValues(8.dp),
             modifier = Modifier
@@ -96,10 +92,10 @@ fun FavouriteScreen(viewModel: QuoteViewModel = hiltViewModel()) {
                     onDismiss = { direction ->
                         when (direction) {
                             SwipeToDismissBoxValue.StartToEnd -> {
-                                viewModel.removeFromFavourites(quote)
+                                onEvent(QuoteEvent.RemoveFromFavourites(quote))
                             }
                             SwipeToDismissBoxValue.EndToStart -> {
-                                viewModel.removeFromFavourites(quote)
+                                onEvent(QuoteEvent.RemoveFromFavourites(quote))
                             }
                             SwipeToDismissBoxValue.Settled -> {}
                         }
@@ -121,7 +117,7 @@ fun FavouriteScreen(viewModel: QuoteViewModel = hiltViewModel()) {
                                         }
                                         val shareIntent = Intent.createChooser(sendIntent, null)
                                         context.startActivity(shareIntent)
-                                })
+                                    })
                             ) {
                                 Text(text = quote.q, style = MaterialTheme.typography.bodyLarge)
                                 Spacer(Modifier.height(10.dp))
@@ -152,6 +148,3 @@ fun FavouriteScreen(viewModel: QuoteViewModel = hiltViewModel()) {
         }
     }
 }
-
-
-
