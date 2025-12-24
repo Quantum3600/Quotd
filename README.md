@@ -62,7 +62,7 @@
 
 ### Key Dependencies
 ```gradle
-• Jetpack Compose (Material 3, Navigation, UI)
+• Jetpack Compose (Material 3 Expressive, Navigation 3, UI)
 • Hilt for Dependency Injection
 • Retrofit & OkHttp for Networking
 • Room for Local Database
