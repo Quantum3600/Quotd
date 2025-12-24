@@ -15,7 +15,7 @@ android {
         minSdk = 33
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.1.0-alpha"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -24,6 +24,9 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -54,6 +57,7 @@ dependencies {
     implementation(libs.androidx.material3.android)
     implementation(libs.androidx.foundation.layout)
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.foundation)
 
     // Hilt
     implementation(libs.hilt.android)

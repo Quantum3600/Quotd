@@ -1,5 +1,6 @@
 package com.trishit.quotd
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,6 +17,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -27,10 +30,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.trishit.quotd.components.BottomTabs
+import com.trishit.quotd.data.QuoteResponse
 import com.trishit.quotd.ui.FavouriteScreen
 import com.trishit.quotd.ui.HomeScreen
+import com.trishit.quotd.ui.QuoteEvent
+import com.trishit.quotd.ui.QuoteState
 import com.trishit.quotd.ui.QuoteViewModel
 import com.trishit.quotd.ui.theme.QuotdTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,7 +49,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             QuotdTheme {
                 val viewModel: QuoteViewModel = hiltViewModel()
-                MainScaffold(viewModel)
+                val state by viewModel.state.collectAsState()
+                MainScaffold(
+                    state = state,
+                    onEvent = viewModel::onEvent
+                )
             }
         }
     }
@@ -53,7 +63,10 @@ class MainActivity : ComponentActivity() {
 enum class MainNavTab { Home, Favourites }
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun MainScaffold(viewModel: QuoteViewModel) {
+private fun MainScaffold(
+    state: QuoteState,
+    onEvent: (QuoteEvent) -> Unit
+) {
     val selectedTabState = rememberSaveable { mutableStateOf(MainNavTab.Home) }
     val stateHolder = rememberSaveableStateHolder()
     val background = MaterialTheme.colorScheme.primaryContainer
@@ -68,7 +81,7 @@ private fun MainScaffold(viewModel: QuoteViewModel) {
                             MainNavTab.Home -> "Quotd"
                             MainNavTab.Favourites -> "Favourites"
                         },
-                        fontFamily = FunnelDisplayFamily,
+                        fontFamily = FunnelDisplayFamily, // This will be fixed later
                         fontWeight = when (selectedTabState.value) {
                             MainNavTab.Home -> FontWeight.ExtraBold
                             MainNavTab.Favourites -> FontWeight.Normal
@@ -91,8 +104,8 @@ private fun MainScaffold(viewModel: QuoteViewModel) {
                 Crossfade(targetState = selected, label = "tab-crossfade") { tab ->
                     stateHolder.SaveableStateProvider(key = tab.name) {
                         when (tab) {
-                            MainNavTab.Home -> HomeScreen(viewModel)
-                            MainNavTab.Favourites -> FavouriteScreen(viewModel)
+                            MainNavTab.Home -> HomeScreen(state, onEvent)
+                            MainNavTab.Favourites -> FavouriteScreen(state, onEvent)
                         }
                     }
                 }
@@ -104,15 +117,21 @@ private fun MainScaffold(viewModel: QuoteViewModel) {
             containerColor = background,
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(start = 24.dp, bottom = 24.dp)
+                .padding(start = 16.dp, bottom = 32.dp)
         )
     }
 
 }
-@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun AppPreview() {
-    QuotdTheme {
-        Text("Quotd")
-    }
+    MainScaffold(
+        state = QuoteState(
+            quote = QuoteResponse(
+                q = "The only thing we have to fear is fear itself.",
+                a = "Franklin D. Roosevelt"
+            )
+        ),
+        onEvent = {}
+    )
 }
