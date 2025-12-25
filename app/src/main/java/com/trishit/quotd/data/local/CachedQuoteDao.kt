@@ -28,4 +28,7 @@ interface CachedQuoteDao {
 
     @Query("SELECT MAX(position) FROM cached_quotes")
     suspend fun getMaxPosition(): Int?
+
+    @Query("SELECT MIN(fetchedAt) FROM cached_quotes")
+    suspend fun getOldestCacheTimestamp(): Long?
 }

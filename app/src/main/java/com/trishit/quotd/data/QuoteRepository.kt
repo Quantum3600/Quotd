@@ -6,23 +6,28 @@ import com.trishit.quotd.data.local.CachedQuoteDao
 import com.trishit.quotd.data.local.FavouriteDao
 import com.trishit.quotd.data.local.FavouriteQuote
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import retrofit2.Response
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class QuoteRepository @Inject constructor(
     private val api: QuoteApi,
     private val favouriteDao: FavouriteDao,
-    private val cachedQuoteDao: CachedQuoteDao
+    private val cachedQuoteDao: CachedQuoteDao,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) {
     // Cache management constants
     companion object {
         private const val TAG = "QuoteRepository"
+        private val CACHE_EXPIRATION = TimeUnit.HOURS.toMillis(24)
     }
 
     // Position trackers for quote navigation
-    private var currentQuotePosition = 0
-    private var currentBatchId = 0  // Track the current batch of quotes
-    private var isNewBatch = true   // Flag to indicate if we're in a new batch
+    private var currentQuotePosition = -1 // Represents the index of the currently visible quote
+    private var currentBatchId = 0      // Track the current batch of quotes
+    private var isNewBatch = true       // Flag to indicate if we're in a new batch
 
     // Original API methods
     suspend fun fetchRandomQuote(): Response<List<QuoteResponse>> = api.getRandomQuote()
@@ -34,17 +39,22 @@ class QuoteRepository @Inject constructor(
     suspend fun removeFavourite(q: String, a: String) = favouriteDao.deleteByQuote(q, a)
     suspend fun isFavourite(q: String, a: String): Boolean = favouriteDao.countByQuote(q, a) > 0
 
+    // New caching functionality
+    fun cachedQuotesFlow(): Flow<List<QuoteResponse>> =
+        cachedQuoteDao.getAllCachedQuotes().map { cachedList ->
+            cachedList.map { QuoteResponse(it.q, it.a) }
+        }
+
     /**
-     * Checks if we can navigate to a previous quote in the current batch
-     * Returns true if there's a previous quote available
+     * Checks if we can navigate to a previous quote in the current batch.
      */
     fun canNavigateToPreviousQuote(): Boolean {
+        // Can navigate back if we are not on the first quote and not in a new batch
         return currentQuotePosition > 0 && !isNewBatch
     }
 
     /**
-     * Gets the previous quote from the cache
-     * Returns null if there's no previous quote or an error occurs
+     * Gets the previous quote from the cache.
      */
     suspend fun getPreviousQuote(): Result<QuoteResponse> {
         try {
@@ -52,17 +62,18 @@ class QuoteRepository @Inject constructor(
                 return Result.failure(Exception("No previous quote available"))
             }
 
-            // Decrement position counter
+            // Decrement position to get the previous quote's index
             currentQuotePosition--
+            userPreferencesRepository.saveLastQuotePosition(currentQuotePosition)
 
-            // Get quote at the current position
             val quote = cachedQuoteDao.getQuoteAtPosition(currentQuotePosition)
 
             return if (quote != null) {
                 Result.success(QuoteResponse(quote.q, quote.a))
             } else {
-                // If something went wrong, reset counter to prevent further issues
+                // If quote is not found, revert the position change
                 currentQuotePosition++
+                userPreferencesRepository.saveLastQuotePosition(currentQuotePosition)
                 Result.failure(Exception("Failed to retrieve previous quote"))
             }
         } catch (e: Exception) {
@@ -73,33 +84,46 @@ class QuoteRepository @Inject constructor(
 
     /**
      * Gets the next quote from the cache or fetches new quotes if needed.
-     * Returns null if there's an error fetching quotes.
      */
     suspend fun getNextQuote(): Result<QuoteResponse> {
         try {
-            // Check if we need to fetch more quotes
+            val oldestTimestamp = cachedQuoteDao.getOldestCacheTimestamp() ?: 0
+            val isCacheExpired = System.currentTimeMillis() - oldestTimestamp > CACHE_EXPIRATION
             val quoteCount = cachedQuoteDao.getCachedQuoteCount()
 
-            // If we're at the end or near the end of our cached quotes, fetch more
-            if (currentQuotePosition >= quoteCount) {
-                Log.d(TAG, "Cache exhausted or empty. Refreshing cache from API.")
+            // Refresh cache if it's expired, empty, or we're at the end
+            if (isCacheExpired || quoteCount == 0) {
+                Log.d(TAG, "Cache is expired or empty. Refreshing.")
                 val result = refreshQuoteCache()
                 if (!result) {
                     return Result.failure(Exception("Failed to refresh quote cache"))
                 }
-                // Reset position to start of the newly cached quotes
-                currentQuotePosition = 0
-                currentBatchId++ // Increment batch ID
-                isNewBatch = true // Mark as new batch
+                // Reset position to the start of the new batch
+                currentQuotePosition = -1
+                currentBatchId++
+                isNewBatch = true
+            } else if (currentQuotePosition == -1) {
+                currentQuotePosition = userPreferencesRepository.lastQuotePosition.first()
+                isNewBatch = false
+            } else if (currentQuotePosition >= quoteCount - 1) {
+                Log.d(TAG, "Cache exhausted. Refreshing.")
+                val result = refreshQuoteCache()
+                if (!result) {
+                    return Result.failure(Exception("Failed to refresh quote cache"))
+                }
+                // Reset position to the start of the new batch
+                currentQuotePosition = -1
+                currentBatchId++
+                isNewBatch = true
             } else {
-                // If we're navigating through quotes, mark as not a new batch
                 isNewBatch = false
             }
 
-            // Get quote at the current position
-            val quote = cachedQuoteDao.getQuoteAtPosition(currentQuotePosition)
-            // Increment for next time
+            // Increment position for the next quote
             currentQuotePosition++
+            userPreferencesRepository.saveLastQuotePosition(currentQuotePosition)
+
+            val quote = cachedQuoteDao.getQuoteAtPosition(currentQuotePosition)
 
             return if (quote != null) {
                 Result.success(QuoteResponse(quote.q, quote.a))
@@ -114,13 +138,10 @@ class QuoteRepository @Inject constructor(
 
     /**
      * Fetches a batch of quotes from the API and stores them in the cache.
-     * Returns true if successful, false otherwise.
      */
     private suspend fun refreshQuoteCache(): Boolean {
         return try {
-            // Clear existing cache
             cachedQuoteDao.clearCache()
-
             val response = api.getRandomQuote()
 
             if (response.isSuccessful) {
@@ -134,7 +155,6 @@ class QuoteRepository @Inject constructor(
                             fetchedAt = System.currentTimeMillis()
                         )
                     }
-                    Log.d(TAG, "Storing ${cachedQuotes.size} quotes in cache")
                     cachedQuoteDao.insertAll(cachedQuotes)
                     true
                 } else {
@@ -151,12 +171,16 @@ class QuoteRepository @Inject constructor(
     }
 
     /**
-     * Forces a refresh of the quote cache
+     * Forces a refresh of the quote cache.
      */
     suspend fun forceRefreshCache(): Boolean {
-        currentQuotePosition = 0
-        currentBatchId++ // Increment batch ID when forcing refresh
-        isNewBatch = true // Mark as new batch
-        return refreshQuoteCache()
+        val refreshed = refreshQuoteCache()
+        if (refreshed) {
+            currentQuotePosition = -1
+            currentBatchId++
+            isNewBatch = true
+            userPreferencesRepository.saveLastQuotePosition(currentQuotePosition)
+        }
+        return refreshed
     }
 }

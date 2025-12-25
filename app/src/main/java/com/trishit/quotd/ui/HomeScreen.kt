@@ -45,6 +45,7 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -121,6 +122,7 @@ fun HomeScreen(state: QuoteState, onEvent: (QuoteEvent) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun QuoteCard(
     quote: QuoteResponse?,
@@ -136,6 +138,7 @@ fun QuoteCard(
         withStyle(
             style = SpanStyle(
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                textDecoration = TextDecoration.None
             )
         ) {
             append("zenquotes.io")
@@ -171,10 +174,11 @@ fun QuoteCard(
                 contentAlignment = Alignment.Center
             ) {
                 if (quote != null) {
+                    Spacer(Modifier.height(48.dp))
                     Column {
                         Text(
                             text = "\"${quote.q}\"",
-                            style = MaterialTheme.typography.headlineMedium,
+                            style = MaterialTheme.typography.headlineMediumEmphasized,
                             textAlign = TextAlign.Center,
                             fontFamily = FunnelDisplayFamily,
                             modifier = Modifier
@@ -196,7 +200,7 @@ fun QuoteCard(
                                 .padding(8.dp)
                                 .fillMaxWidth(),
                             text = annotatedLinkString,
-                            fontSize = 10.sp,
+                            fontSize = 12.sp,
                             fontFamily = MuseoModernoFamily,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
