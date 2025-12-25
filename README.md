@@ -174,7 +174,7 @@ Contributions are welcome! Feel free to:
 
 ## 📄 License
 
-This project is available for educational and personal use.  Please check the [Privacy Policy](privacy-policy.md) for data handling information.
+This project is licensed under Apache License (version 2.0).  Please check the [Privacy Policy](privacy-policy.md) for data handling information.
 
 ---
 
