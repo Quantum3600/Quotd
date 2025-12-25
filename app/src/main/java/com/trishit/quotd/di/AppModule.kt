@@ -1,9 +1,14 @@
 package com.trishit.quotd.di
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.room.Room
 import com.trishit.quotd.data.QuoteApi
 import com.trishit.quotd.data.QuoteRepository
+import com.trishit.quotd.data.UserPreferencesRepository
 import com.trishit.quotd.data.local.CachedQuoteDao
 import com.trishit.quotd.data.local.FavouriteDao
 import com.trishit.quotd.data.local.QuoteDatabase
@@ -17,6 +22,8 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
+
+private const val USER_PREFERENCES = "user_preferences"
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -61,6 +68,24 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideQuoteRepository(api: QuoteApi, favouriteDao: FavouriteDao, cachedQuoteDao: CachedQuoteDao): QuoteRepository =
-        QuoteRepository(api, favouriteDao, cachedQuoteDao)
+    fun providePreferencesDataStore(@ApplicationContext appContext: Context): DataStore<Preferences> {
+        return PreferenceDataStoreFactory.create(
+            produceFile = { appContext.preferencesDataStoreFile(USER_PREFERENCES) }
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserPreferencesRepository(dataStore: DataStore<Preferences>): UserPreferencesRepository {
+        return UserPreferencesRepository(dataStore)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideQuoteRepository(
+        api: QuoteApi,
+        favouriteDao: FavouriteDao,
+        cachedQuoteDao: CachedQuoteDao,
+        userPreferencesRepository: UserPreferencesRepository
+    ): QuoteRepository = QuoteRepository(api, favouriteDao, cachedQuoteDao, userPreferencesRepository)
 }

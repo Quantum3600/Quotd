@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.trishit.quotd.components.BottomTabs
+import com.trishit.quotd.components.OverflowMenu
 import com.trishit.quotd.data.QuoteResponse
 import com.trishit.quotd.ui.FavouriteScreen
 import com.trishit.quotd.ui.HomeScreen
@@ -95,6 +96,9 @@ private fun MainScaffold(
                         containerColor = MaterialTheme.colorScheme.surface,
                         titleContentColor = MaterialTheme.colorScheme.onSurface,
                     ),
+                    actions = {
+                        OverflowMenu()
+                    },
                     modifier = Modifier.semantics { contentDescription = "TopAppBar" }
                 )
             }
@@ -125,13 +129,15 @@ private fun MainScaffold(
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun AppPreview() {
-    MainScaffold(
-        state = QuoteState(
-            quote = QuoteResponse(
-                q = "The only thing we have to fear is fear itself.",
-                a = "Franklin D. Roosevelt"
-            )
-        ),
-        onEvent = {}
-    )
+    QuotdTheme {
+        MainScaffold(
+            state = QuoteState(
+                quote = QuoteResponse(
+                    q = "The only thing we have to fear is fear itself.",
+                    a = "Franklin D. Roosevelt"
+                )
+            ),
+            onEvent = {}
+        )
+    }
 }
