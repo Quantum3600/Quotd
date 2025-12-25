@@ -40,7 +40,7 @@
 > <img src="screenshots/Screenshot_2025-12-24-00-00-13-440_com.trishit.quotd.jpg" width="180" alt="Home Light">
 > <img src="screenshots/Screenshot_2025-12-24-00-00-45-268_com.trishit.quotd.jpg" width="180" alt="Home Light">
 > <img src="screenshots/Screenshot_2025-12-24-00-01-17-040_com.trishit.quotd.jpg" width="180" alt="Home Light">
-> <img src="screenshots/Screenshot_2025-12-24-00-01-17-040_com.trishit.quotd.jpg" width="180" alt="Home Light">
+> <img src="screenshots/Screenshot_2025-12-24-00-01-23-335_com.trishit.quotd.jpg" width="180" alt="Home Light">
 
 ---
 
