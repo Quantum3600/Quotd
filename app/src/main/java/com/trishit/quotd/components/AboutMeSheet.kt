@@ -5,19 +5,27 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AlternateEmail
+import androidx.compose.material.icons.rounded.Coffee
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,10 +40,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import com.trishit.quotd.FunnelDisplayFamily
 import com.trishit.quotd.MuseoModernoFamily
 import com.trishit.quotd.R
 
@@ -44,7 +58,21 @@ import com.trishit.quotd.R
 fun AboutMeSheet(onDismiss: () -> Unit) {
     var showFollowMeDialog by remember { mutableStateOf(false) }
     val imagePainter = painterResource(R.drawable.myphoto)
-
+    val privacyPolicyUrl = "https://github.com/Quantum3600/quotd/privacy-policy.md"
+    val privacyString = buildAnnotatedString {
+        pushLink(LinkAnnotation.Url(privacyPolicyUrl))
+        withStyle(
+            style = SpanStyle(
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                textDecoration = TextDecoration.None,
+                fontFamily = MuseoModernoFamily,
+                fontSize = 10.sp
+            )
+        ) {
+            append("Privacy Policy")
+        }
+        pop()
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -52,14 +80,16 @@ fun AboutMeSheet(onDismiss: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
                 painter = imagePainter,
                 contentDescription = "My Photo",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.size(120.dp).clip(CircleShape)
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -80,13 +110,33 @@ fun AboutMeSheet(onDismiss: () -> Unit) {
             val context = LocalContext.current
             ButtonGroup(
                 overflowIndicator = {},
-                modifier = Modifier.fillMaxWidth().padding(16.dp).height(60.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .height(68.dp),
                 expandedRatio = ButtonGroupDefaults.ExpandedRatio,
                 horizontalArrangement = ButtonGroupDefaults.HorizontalArrangement
             ) {
                 clickableItem(
                     onClick = {showFollowMeDialog = true},
-                    label = "Follow Me",
+                    icon = {
+                        Row(
+                            Modifier.fillMaxSize(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.AlternateEmail,
+                                contentDescription = "Follow Me"
+                            )
+                            Spacer(Modifier.width(16.dp))
+                            Text(
+                                text = "Follow Me",
+                                fontFamily = FunnelDisplayFamily,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    },
+                    label = "",
                     weight = 1f
                 )
                 clickableItem(
@@ -94,25 +144,29 @@ fun AboutMeSheet(onDismiss: () -> Unit) {
                         val browserIntent = Intent(Intent.ACTION_VIEW, "https://www.buymeacoffee.com/trishit.me".toUri())
                         context.startActivity(browserIntent)
                     },
-                    label = "Buy me a coffee",
+                    icon = {
+                        Row(
+                            Modifier.fillMaxSize(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Coffee,
+                                contentDescription = "Support Me"
+                            )
+                            Spacer(Modifier.width(16.dp))
+                            Text(
+                                text = "Buy Me a Coffee",
+                                fontFamily = FunnelDisplayFamily,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    },
+                    label = "",
                     weight = 1f
                 )
             }
-//            Row(
-//                modifier = Modifier.fillMaxWidth(),
-//                horizontalArrangement = Arrangement.SpaceEvenly
-//            ) {
-//                val context = LocalContext.current
-//                Button(onClick = { showFollowMeDialog = true }) {
-//                    Text("Follow Me", fontFamily = MuseoModernoFamily)
-//                }
-//                Button(onClick = {
-//                    val browserIntent = Intent(Intent.ACTION_VIEW, "https://www.buymeacoffee.com/trishit.me".toUri())
-//                    context.startActivity(browserIntent)
-//                }) {
-//                    Text("Buy me a coffee", fontFamily = MuseoModernoFamily)
-//                }
-//            }
+            Spacer(Modifier.height(24.dp))
+            Text(privacyString)
         }
     }
 
@@ -124,21 +178,21 @@ fun AboutMeSheet(onDismiss: () -> Unit) {
 @Composable
 fun FollowMeDialog(onDismiss: () -> Unit) {
     val context = LocalContext.current
-    val socialMedia = listOf(
-        "Facebook" to "https://www.facebook.com/trishit.banerjee.3",
-        "WhatsApp" to "https://wa.me/919876543210", // Placeholder, user can change
-        "Instagram" to "https://www.instagram.com/trishit.banerjee",
-        "Twitter" to "https://twitter.com/TrishitBanerjee",
-        "GitHub" to "https://github.com/Quantum3600",
-        "LinkedIn" to "https://www.linkedin.com/in/trishit-banerjee-a62123248/"
+    val socialMedia: List<Triple<String, String, Int>> = listOf(
+        Triple("Facebook", "https://www.facebook.com/com.trishit.quantum360", R.drawable.facebook),
+        Triple("WhatsApp", "https://wa.me/919432854276", R.drawable.whatsapp),
+        Triple("Instagram", "https://www.instagram.com/com.trishit.quantum360", R.drawable.instagram),
+        Triple("X/Twitter", "https://x.com/Trishit18", R.drawable.x),
+        Triple("GitHub", "https://github.com/Quantum3600", R.drawable.github),
+        Triple("LinkedIn", "https://www.linkedin.com/in/trishit-majumdar-008344281/", R.drawable.linkedin)
     )
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Follow Me", fontFamily = MuseoModernoFamily) },
+        title = { Text("Follow Me", fontFamily = FunnelDisplayFamily) },
         text = {
             LazyColumn {
-                items(socialMedia) { (platform, url) ->
+                items(socialMedia) { (platform, url, icon) ->
                     TextButton(onClick = {
                         val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                         try {
@@ -147,7 +201,11 @@ fun FollowMeDialog(onDismiss: () -> Unit) {
                             Toast.makeText(context, "No app found to handle this action", Toast.LENGTH_SHORT).show()
                         }
                     }) {
-                        Text(platform, fontFamily = MuseoModernoFamily)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(painter = painterResource(icon),modifier = Modifier.size(24.dp), contentDescription = platform)
+                            Spacer(Modifier.width(24.dp))
+                            Text(platform, fontFamily = FunnelDisplayFamily, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                     }
                 }
             }

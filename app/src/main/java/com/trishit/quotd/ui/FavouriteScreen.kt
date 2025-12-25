@@ -167,11 +167,11 @@ fun FavouriteScreen(state: QuoteState, onEvent: (QuoteEvent) -> Unit) {
         Text(
             text = "Made with ❤️ in India",
             fontFamily = FunnelDisplayFamily,
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.3f),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp, 40.dp)
+                .padding(24.dp, 40.dp)
         )
     }
 }

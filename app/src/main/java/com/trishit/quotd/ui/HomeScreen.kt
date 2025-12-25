@@ -122,6 +122,7 @@ fun HomeScreen(state: QuoteState, onEvent: (QuoteEvent) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun QuoteCard(
     quote: QuoteResponse?,
@@ -177,7 +178,7 @@ fun QuoteCard(
                     Column {
                         Text(
                             text = "\"${quote.q}\"",
-                            style = MaterialTheme.typography.headlineMedium,
+                            style = MaterialTheme.typography.headlineMediumEmphasized,
                             textAlign = TextAlign.Center,
                             fontFamily = FunnelDisplayFamily,
                             modifier = Modifier
